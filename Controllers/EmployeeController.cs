@@ -18,7 +18,7 @@ namespace DepartmentEmployeeApp.Controllers
         }
 
         // GET: /Employee
-       public IActionResult Index()
+        public IActionResult Index()
         {
             var employees = _empDal.GetAll();
             return View(employees);
@@ -33,9 +33,9 @@ namespace DepartmentEmployeeApp.Controllers
             return View(new Employee());
         }
 
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-       public IActionResult Create(Employee emp)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Employee emp)
         {
             ModelState.Remove(nameof(emp.DepartmentName));
 
@@ -51,17 +51,19 @@ namespace DepartmentEmployeeApp.Controllers
                 return View(emp);
             }
 
-        try
-        {
-            _empDal.Insert(emp);
-            return RedirectToAction("Index");
-         }
-        catch (Exception ex)
-        {
-         ModelState.AddModelError("", "Unable to save employee: " + ex.Message);
-         ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName");
-         return View(emp);
-        }
+            try
+            {
+                _empDal.Insert(emp);
+                TempData["Message"] = "Employee created successfully!";
+                TempData["MessageType"] = "success";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Unable to save employee: " + ex.Message);
+                ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName");
+                return View(emp);
+            }
         }
 
 
@@ -81,7 +83,7 @@ namespace DepartmentEmployeeApp.Controllers
 
         // POST: /Employee/Edit
         [HttpPost]
-[       ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(Employee emp)
         {
             ModelState.Remove(nameof(emp.DepartmentName));
@@ -94,6 +96,8 @@ namespace DepartmentEmployeeApp.Controllers
             }
 
             _empDal.Update(emp);
+            TempData["Message"] = "Employee Updated successfully!";
+            TempData["MessageType"] = "success";
             return RedirectToAction("Index");
         }
 

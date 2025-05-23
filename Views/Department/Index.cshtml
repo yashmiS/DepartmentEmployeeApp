@@ -6,6 +6,14 @@
 
 <h2 class="mb-3">Departments</h2>
 <a asp-action="Create" class="btn btn-primary mb-3">+ Add Department</a>
+@if (TempData["Message"] != null)
+{
+    var type = TempData["MessageType"]?.ToString() ?? "info";
+    <div class="alert alert-@type alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -16,16 +24,16 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.DepartmentCode</td>
-            <td>@item.DepartmentName</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-warning">Edit</a>
-                <a asp-action="Delete" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-danger">Delete</a>
-            </td>
-        </tr>
-    }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DepartmentCode</td>
+                <td>@item.DepartmentName</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

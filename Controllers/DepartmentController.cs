@@ -1,3 +1,4 @@
+using System.Data.SqlClient;
 using DepartmentEmployeeApp.Data;
 using DepartmentEmployeeApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace DepartmentEmployeeApp.Controllers
 
         public IActionResult Create()
         {
-            var department = new Department(); // Always pass a non-null model
+            var department = new Department();
             return View(department);
         }
 
@@ -34,18 +35,20 @@ namespace DepartmentEmployeeApp.Controllers
             if (ModelState.IsValid)
             {
                 _dal.Insert(dept);
+                TempData["Message"] = "Employee created successfully!";
+                TempData["MessageType"] = "success";
                 return RedirectToAction("Index");
             }
             return View(dept);
         }
 
         public IActionResult Edit(int id)
-        
+
         {
             var dept = _dal.GetById(id);
             if (dept == null) return NotFound();
 
-            return View("Create", dept); // ✅ Explicitly load the Create.cshtml view
+            return View("Create", dept);
         }
 
 
@@ -56,6 +59,8 @@ namespace DepartmentEmployeeApp.Controllers
             if (ModelState.IsValid)
             {
                 _dal.Update(dept);
+                TempData["Message"] = "Employee Updated successfully!";
+                TempData["MessageType"] = "success";
                 return RedirectToAction("Index");
             }
             return View(dept);
@@ -69,10 +74,32 @@ namespace DepartmentEmployeeApp.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            _dal.Delete(id);
+            try
+            {
+                _dal.Delete(id);
+                TempData["Message"] = "Department deleted successfully.";
+                TempData["MessageType"] = "success";
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Message.Contains("REFERENCE constraint"))
+                {
+                    TempData["Message"] = "Cannot delete this department because it has employees assigned.";
+                    TempData["MessageType"] = "warning";
+                }
+                else
+                {
+                    TempData["Message"] = "An error occurred while deleting the department.";
+                    TempData["MessageType"] = "danger";
+                }
+            }
+
             return RedirectToAction("Index");
         }
+
+
     }
 }

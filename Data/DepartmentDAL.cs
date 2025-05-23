@@ -96,5 +96,18 @@ namespace DepartmentEmployeeApp.Data
                 cmd.ExecuteNonQuery();
             }
         }
+
+        public bool HasEmployees(int departmentId)
+        {
+            using (var conn = _db.GetConnection())
+            {
+                var cmd = new SqlCommand("SELECT COUNT(*) FROM Employees WHERE DepartmentId = @deptId", conn);
+                cmd.Parameters.AddWithValue("@deptId", departmentId);
+                conn.Open();
+                int count = (int)cmd.ExecuteScalar();
+                return count > 0;
+            }
+        }
+
     }
 }
