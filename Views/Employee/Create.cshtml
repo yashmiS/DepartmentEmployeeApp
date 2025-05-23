@@ -1,0 +1,63 @@
+@model Employee
+@{
+    var title = ViewData["Title"] as string ?? "";
+    var actionName = title.Contains("Create") ? "Create" : "Edit";
+}
+
+<form asp-action="@actionName" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input asp-for="EmployeeId" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="FirstName" class="form-label"></label>
+        <input asp-for="FirstName" class="form-control" />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="LastName" class="form-label"></label>
+        <input asp-for="LastName" class="form-control" />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DateOfBirth" class="form-label"></label>
+        <input asp-for="DateOfBirth" class="form-control" type="date" />
+        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+    <label class="form-label">Age</label>
+    <input class="form-control" value="@Model.Age" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Salary" class="form-label"></label>
+        <input asp-for="Salary" class="form-control" />
+        <span asp-validation-for="Salary" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+    <label asp-for="DepartmentId" class="control-label"></label>
+    <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-control">
+        <option value="">-- Select Department --</option>
+    </select>
+    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+    </div>
+    @Html.AntiForgeryToken()
+
+    <div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+    
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
