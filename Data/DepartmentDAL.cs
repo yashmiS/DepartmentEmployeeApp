@@ -108,6 +108,28 @@ namespace DepartmentEmployeeApp.Data
                 return count > 0;
             }
         }
+        public Department GetByCode(string code)
+        {
+            using (var conn = _db.GetConnection())
+            {
+                var cmd = new SqlCommand("SELECT * FROM Departments WHERE DepartmentCode = @code", conn);
+                cmd.Parameters.AddWithValue("@code", code);
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new Department
+                        {
+                            DepartmentId = Convert.ToInt32(reader["DepartmentId"]),
+                            DepartmentName = reader["DepartmentName"].ToString(),
+                            DepartmentCode = reader["DepartmentCode"].ToString()
+                        };
+                    }
+                }
+            }
+            return null;
+        }
 
     }
 }

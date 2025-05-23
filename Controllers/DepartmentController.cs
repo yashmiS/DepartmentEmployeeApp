@@ -34,6 +34,13 @@ namespace DepartmentEmployeeApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingDept = _dal.GetByCode(dept.DepartmentCode);
+                if (existingDept != null)
+                {
+                    TempData["Message"] = "A department with this code already exists.";
+                    TempData["MessageType"] = "warning";
+                    return View(dept);
+                }
                 _dal.Insert(dept);
                 TempData["Message"] = "Employee created successfully!";
                 TempData["MessageType"] = "success";
@@ -56,15 +63,27 @@ namespace DepartmentEmployeeApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Department dept)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _dal.Update(dept);
-                TempData["Message"] = "Employee Updated successfully!";
-                TempData["MessageType"] = "success";
-                return RedirectToAction("Index");
+                return View("Create", dept);;
             }
-            return View(dept);
+
+            var existingDept = _dal.GetByCode(dept.DepartmentCode);
+
+            // Check if another department with the same code exists
+            if (existingDept != null && existingDept.DepartmentId != dept.DepartmentId)
+            {
+                TempData["Message"] = "A department with this code already exists.";
+                TempData["MessageType"] = "warning";
+                return View("Create", dept);;
+            }
+
+            _dal.Update(dept);
+            TempData["Message"] = "Department updated successfully!";
+            TempData["MessageType"] = "success";
+            return RedirectToAction("Index");
         }
+
 
         public IActionResult Delete(int id)
         {

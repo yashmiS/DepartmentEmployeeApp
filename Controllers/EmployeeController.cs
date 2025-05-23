@@ -1,8 +1,8 @@
 using DepartmentEmployeeApp.Data;
 using DepartmentEmployeeApp.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 
 namespace DepartmentEmployeeApp.Controllers
 {
@@ -17,18 +17,19 @@ namespace DepartmentEmployeeApp.Controllers
             _deptDal = new DepartmentDAL(config);
         }
 
-        // GET: /Employee
         public IActionResult Index()
         {
             var employees = _empDal.GetAll();
             return View(employees);
         }
 
-
-        // GET: /Employee/Create
         public IActionResult Create()
         {
-            ViewData["Title"] = "Create Employee";  // <-- Must set this
+            var model = new Employee
+            {
+                DateOfBirth = new DateTime(2000, 1, 1) // fallback safe default
+            };
+            ViewData["Title"] = "Create Employee";
             ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName");
             return View(new Employee());
         }
@@ -39,70 +40,68 @@ namespace DepartmentEmployeeApp.Controllers
         {
             ModelState.Remove(nameof(emp.DepartmentName));
 
-            if (!_deptDal.GetAll().Any(d => d.DepartmentId == emp.DepartmentId))
+            if (_empDal.GetByEmail(emp.Email) != null)
             {
-                ModelState.AddModelError("DepartmentId", "Invalid department selected.");
+                ModelState.AddModelError("Email", "Email already exists for another employee.");
+            }
+
+            if (emp.DateOfBirth < new DateTime(1753, 1, 1))
+            {
+                ModelState.AddModelError("DateOfBirth", "DateOfBirth must be after 01/01/1753.");
             }
 
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Create Employee";
                 ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName");
                 return View(emp);
             }
 
-            try
-            {
-                _empDal.Insert(emp);
-                TempData["Message"] = "Employee created successfully!";
-                TempData["MessageType"] = "success";
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Unable to save employee: " + ex.Message);
-                ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName");
-                return View(emp);
-            }
+            _empDal.Insert(emp);
+            TempData["Message"] = "Employee created successfully!";
+            TempData["MessageType"] = "success";
+            return RedirectToAction("Index");
         }
 
-
-
-        // GET: /Employee/Edit/5
         public IActionResult Edit(int id)
         {
             var emp = _empDal.GetById(id);
             if (emp == null) return NotFound();
 
-            ViewData["Title"] = "Edit Employee";  // <-- Set here too
+            ViewData["Title"] = "Edit Employee";
             ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName", emp.DepartmentId);
             return View("Create", emp);
-
         }
 
-
-        // POST: /Employee/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Employee emp)
         {
             ModelState.Remove(nameof(emp.DepartmentName));
 
+            var existing = _empDal.GetByEmail(emp.Email);
+            if (existing != null && existing.EmployeeId != emp.EmployeeId)
+            {
+                ModelState.AddModelError("Email", "Email already exists for another employee.");
+            }
+
+            if (emp.DateOfBirth < new DateTime(1753, 1, 1))
+            {
+                ModelState.AddModelError("DateOfBirth", "DateOfBirth must be after 01/01/1753.");
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewData["Title"] = "Edit Employee";
                 ViewBag.Departments = new SelectList(_deptDal.GetAll(), "DepartmentId", "DepartmentName", emp.DepartmentId);
                 return View("Create", emp);
             }
 
             _empDal.Update(emp);
-            TempData["Message"] = "Employee Updated successfully!";
+
+            TempData["Message"] = "Employee updated successfully!";
             TempData["MessageType"] = "success";
             return RedirectToAction("Index");
         }
 
-
-        // GET: /Employee/Delete/5
         public IActionResult Delete(int id)
         {
             var emp = _empDal.GetById(id);
@@ -110,12 +109,13 @@ namespace DepartmentEmployeeApp.Controllers
             return View(emp);
         }
 
-        // POST: /Employee/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
             _empDal.Delete(id);
+            TempData["Message"] = "Employee deleted successfully!";
+            TempData["MessageType"] = "success";
             return RedirectToAction("Index");
         }
     }
